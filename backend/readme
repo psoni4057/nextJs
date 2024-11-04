@@ -1,0 +1,12 @@
+Virtual environment can be created using:
+python -m venv gdpr-validator
+
+Install the dependencies 
+pip install -r requirements.txt
+
+Activate the environment
+
+Scripts/activate
+
+run the python main  
+python main.py
