@@ -1,0 +1,14 @@
+# Ignore virtual environments
+gdpr-validator/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore IDE configurations
+.vscode/
+.idea/
+
+# Ignore other unnecessary files
+*.log
+*.env  # If using environment variables
