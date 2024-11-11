@@ -2,17 +2,10 @@ from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts import PromptTemplate
-from models.gemini import llm
-
-# create the prompt
-prompt_template: str = """/
-You are a gdpr expert, tell the given data is compliant and the reason / 
-: {data}. Do not use technical words, give easy/
-to understand responses.
-The answer should be in the JSON format as follows:/
-compliant: yes/no
-reason: 
-"""
+import requests
+from typing import Any
+from langchain.output_parsers import PydanticOutputParser
+from langchain.prompts import PromptTemplate
 
 ## Write a Pydantic model that outlines the structure of the data you expect from LLM.
 ## The model can have the fields like compliant,reason...
@@ -27,7 +20,7 @@ parser = PydanticOutputParser(pydantic_object=ValidationResponse)
 ## Define the prompt template
 prompt = PromptTemplate(
     template=prompt_template,
-    input_variables=["data"],
+    input_variables=[],
     partial_variables={"format_instructions": parser.get_format_instructions()},
 )
 
@@ -35,8 +28,37 @@ prompt = PromptTemplate(
 ## Interact with gemini use the api call and passing the prompt template
 ## Return the response as a ValidationResponse object
 
-def invoke_service():
-    chain = prompt | llm 
-    response = chain.invoke({"data": "My name is John and this is my phone number 989787?"})
-    validation_response = parser.parse(response.content)
-    print(validation_response)
+
+class GeminiService:
+    def __init__(self, api_key: str, model_url: str):
+        self.api_key = api_key
+        self.model_url = model_url
+        self.parser = PydanticOutputParser(pydantic_object=ValidationResponse)
+
+    def generate_response(self, content: str) -> ValidationResponse:
+        prompt_input = prompt.format(content=content)
+        
+        # Calling Gemini API with the formatted prompt
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+
+        payload = {
+            "model": "gemini-1",                                  
+            "messages": [{"role": "system", "content": prompt_input}],
+            "temperature": 0.7,
+        }
+
+        # Sending API request
+        response = requests.post(self.model_url, json=payload, headers=headers)
+        if response.status_code == 200:
+            result = response.json()
+            # Extracting the response content from the API response
+            model_output = result['choices'][0]['message']['content']
+            
+            # Parse the model's output into the ValidationResponse model
+            parsed_response = self.parser.parse(model_output)
+            return parsed_response
+        else:
+            raise Exception(f"Error from Gemini API: {response.text}")
