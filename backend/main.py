@@ -1,5 +1,3 @@
-from services.gemini_service import GeminiService
-from models.gemini import llm 
+import agent.agent
 
-gemini_service = GeminiService()
-print(gemini_service.invoke_service({"data":"What is the capital of India"}))
+agent.agent.invoke_agent()
