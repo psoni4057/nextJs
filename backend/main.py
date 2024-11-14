@@ -1,10 +1,11 @@
-from backend.services.gemini_service import GeminiService, ValidationService
+# backend/main.py
+from fastapi import FastAPI
+from backend.api.endpoints import compliance
 
-# Example usage
-if __name__ == "__main__":
-    gemini_service = GeminiService(api_key="api-key", model_url=" ")
-    content = " "
-    validation_response = gemini_service.generate_response(content)
-    
-    # Print the validation response
-    print(validation_response)
+app = FastAPI()
+
+app.include_router(compliance.router, prefix="/api/v1")
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the GDPR Validator API"}
