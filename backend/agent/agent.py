@@ -1,7 +1,6 @@
 import json
 import sqlite3
 from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain  
 from backend.services.gemini_service import GeminiService 
 
 class Agent:
