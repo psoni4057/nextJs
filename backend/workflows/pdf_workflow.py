@@ -5,8 +5,8 @@ from backend.utils.exceptions import WorkflowError
 
 
 def check_pdf_compliance(data_url: str):
-    if not data_url.startswith("http"):
-        raise WorkflowError("Invalid URL provided for PDF data.")
+    #if not data_url.startswith("http"):
+        #raise WorkflowError("Invalid URL provided for PDF data.")
     
     # Example logic: Fetch the PDF, process it, and check compliance
     pdf_content = fetch_pdf(data_url)
