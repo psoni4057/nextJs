@@ -1,17 +1,23 @@
+from pathlib import Path
+import os
 import sqlite3
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 app = FastAPI()
-
-db_name = 'gdbr_Validator.db'
+cwd = os.getcwd()
+parent_dir = os.path.dirname(cwd)
+db_path = Path(parent_dir+"/backend/core/gdbr_Validator.db")
 
 class ConfigRules:
-    def __init__(self, db_name):
-        self.db_name = db_name
+    def __init__(self, db_path):
+        self.db_paths = db_path
+        
+    def create_config():
+        return ConfigRules(db_path)   
 
     def _connect(self):
-        return sqlite3.connect(self.db_name)
+        return sqlite3.connect(db_path)
 
     def create_table(self):
         connection = self._connect()
@@ -52,7 +58,6 @@ class ConfigRules:
         connection.close()
         return rows
 
-    #Fetch a specific rule by its name.
     def get_rule_by_name(self, rule):
         connection = self._connect()
         cursor = connection.cursor()
@@ -62,7 +67,7 @@ class ConfigRules:
         return rows
 
     def update_rule(self, rule_value: str, new_example: str):
-        connection = sqlite3.connect(self.db_name)
+        connection = sqlite3.connect(db_path)
         cursor = connection.cursor()
         update_query = "UPDATE gdbr_rules SET example = ? WHERE rules = ?"
         
@@ -79,10 +84,18 @@ class ConfigRules:
         finally:
             connection.close()
 
-    #Delete a rule by its name.
     def delete_rule(self, rule):
         connection = self._connect()
         cursor = connection.cursor()
         cursor.execute("DELETE FROM gdbr_rules WHERE rules = ?", (rule,))
         connection.commit()
         connection.close()
+
+    def reset(self):
+        connection = self._connect()
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM gdbr_rules;")
+        cursor.execute("DELETE FROM sqlite_sequence WHERE name='gdbr_rules';")
+        connection.commit()
+
+
