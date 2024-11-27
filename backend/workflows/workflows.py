@@ -1,4 +1,5 @@
 import language_tool_python
+from transformers import pipeline
 from langgraph.graph import StateGraph, START, END
 from textblob import TextBlob
 
@@ -23,11 +24,30 @@ def grammar_check(state: TextCheckerState):
     
     return state
 
+# Sentiment analysis function using Hugging Face's pipeline and CardiffNLP's model
 def sentiment_analysis(state: TextCheckerState):
-    # Real sentiment analysis using TextBlob
-    analysis = TextBlob(state.input_text)
-    sentiment = "Positive" if analysis.sentiment.polarity > 0 else "Negative"
-    state.results["sentiment"] = f"{sentiment} sentiment detected."
+    # Use the fine-grained sentiment analysis model (cardiffnlp/twitter-roberta-base-sentiment)
+    sentiment_analyzer = pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-sentiment")
+    
+    # Analyze the sentiment of the input text
+    analysis = sentiment_analyzer(state.input_text)
+    
+    # Extract the label and score from the analysis result
+    label = analysis[0]['label']
+    score = analysis[0]['score']
+
+    # Map Hugging Face labels to more user-friendly terms
+    if label == "LABEL_0":
+        sentiment = "Negative"
+    elif label == "LABEL_1":
+        sentiment = "Neutral"
+    elif label == "LABEL_2":
+        sentiment = "Positive"
+    else:
+        sentiment = "Unknown"
+    
+    # Add the sentiment result to the state object
+    state.results["sentiment"] = f"{sentiment} sentiment detected with confidence {score:.2f}."
     return state
 
 # Create a workflow graph
