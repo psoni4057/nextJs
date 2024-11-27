@@ -1,11 +1,10 @@
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from core.config import ConfigRules
+from backend.core.config import ConfigRules
 
-db_name = 'gdbr_Validator.db'
 app = FastAPI()
-configrules = ConfigRules(db_name)
-configrules.create_table()
+configrules = ConfigRules.create_config()
 
 class Rule(BaseModel):
     rules: str
@@ -51,4 +50,3 @@ async def update_rule(rule_name: str, rule_update: Rule):
         return {"message": f"Rule '{rule_update.rules}' updated successfully!"}
     else:
         raise HTTPException(status_code=404, detail=f"Rule '{rule_update.rules}' not found.")
-
