@@ -1,7 +1,9 @@
 import language_tool_python
 from transformers import pipeline
-from langgraph.graph import StateGraph, START, END
 from textblob import TextBlob
+from langgraph.graph import StateGraph, START, END
+import json
+
 
 # Define the workflow state using a custom class
 class TextCheckerState:
@@ -9,22 +11,26 @@ class TextCheckerState:
         self.input_text = input_text
         self.results = {}
 
+
 # Define individual task nodes
+
+# Grammar Check Function
 def grammar_check(state: TextCheckerState):
     # Use language_tool_python for grammar and spelling check
     tool = language_tool_python.LanguageTool('en-US')
     matches = tool.check(state.input_text)
-    
+
     if matches:
         # If there are errors, list them
         errors = [match.message for match in matches]
         state.results["grammar"] = f"Grammar issues found: {', '.join(errors)}"
     else:
         state.results["grammar"] = "No grammar issues detected."
-    
+
     return state
 
-# Sentiment analysis function using Hugging Face's pipeline and CardiffNLP's model
+
+# Sentiment Analysis Function using Hugging Face's pipeline
 def sentiment_analysis(state: TextCheckerState):
     # Use the fine-grained sentiment analysis model (cardiffnlp/twitter-roberta-base-sentiment)
     sentiment_analyzer = pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-sentiment")
@@ -50,6 +56,7 @@ def sentiment_analysis(state: TextCheckerState):
     state.results["sentiment"] = f"{sentiment} sentiment detected with confidence {score:.2f}."
     return state
 
+
 # Create a workflow graph
 workflow = StateGraph(TextCheckerState)
 
@@ -65,14 +72,15 @@ workflow.add_edge("sentiment_analysis", END)
 # Compile the workflow (creating a CompiledStateGraph)
 compiled_workflow = workflow.compile()
 
+
 # Execute the workflow by manually triggering the nodes
 if __name__ == "__main__":
     # Ask the user for input text
     user_input = input("Enter a text for grammar and sentiment analysis: ")
-    
+
     # Initialize the workflow state with the user input
     initial_state = TextCheckerState(input_text=user_input)
-    
+
     # Process the graph manually
     current_state = initial_state
 
