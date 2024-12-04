@@ -1,5 +1,5 @@
 // pages/api/upload.js
-// Backend API Routes: handle the incoming multipart request on the server side using Formidable in Next.jsAPI routes
+// Backend API Routes: handle the incoming multipart request on the server side using Formidable in Next.js
 
 import formidable from 'formidable';
 import fs from 'fs';
@@ -11,6 +11,10 @@ export const config = {
 };
 
 const handler = async (req, res) => {
+    if (req.method !== 'POST') {
+        return res.status(405).send('Method Not Allowed');
+    }
+
     const form = formidable({ multiples: true, uploadDir: './uploads', keepExtensions: true });
 
     form.parse(req, (err, fields, files) => {
@@ -35,14 +39,14 @@ const handler = async (req, res) => {
             if (file) {
                 const filePath = Array.isArray(file) ? file[0].filepath : file.filepath;
                 const fileContent = fs.readFileSync(filePath);
-                res.status(200).json({ message: "File is valid.", fileContent: fileContent.toString() });
+                res.status(200).json({ message: "Request fulfilled successfully.File is valid.", fileContent: fileContent.toString() });
             } else{
-                res.status(200).json({ message: "Text are valid.", text: text });
+                res.status(200).json({ message: "Request fulfilled successfully.Text is valid.", text: text });
             }
             
         } catch (err) {
-            console.error('File processing error:', err);
-            res.status(500).json({ error: "An error occurred while processing the file." });
+            console.error('Request processing error:', err);
+            res.status(500).json({ error: "An error occurred while processing the request." });
         }
     });
 };

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import axios from 'axios';
 
 //send the request from the client side
@@ -7,21 +7,44 @@ export default function Upload() {
   const [text, setText] = useState('');
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
+  const fileInputRef = useRef(null);
+  const textInputRef = useRef(null);
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile ? selectedFile : null);
+    
+    // Clear the text input field when a file is selected 
+    if (textInputRef.current) {
+      textInputRef.current.value = '';
+      setText('');
+    }
+  };
+
+  const handleFileRemove = () => {
+    setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''; // Clear the file input element value
+    }
   };
 
   const handleTextChange = (e) => {
     setText(e.target.value);
+
+    // Clear the file input field when a text is selected 
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      setFile(null);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if ((!text || text.trim().length === 0) && !file) {
-      //return res.status(400).json({ error: 'Text or file input is missing' });
       setMessage('Text or file input is missing');
+      setTimeout(() => setMessage(''), 3000);
+      return;
     }
     const formData = new FormData();
     if (text) {
@@ -31,29 +54,14 @@ export default function Upload() {
       formData.append('file', file);
     }
 
-
-    const isFormDataEmpty = () => {
-      for (let key of formData.keys()) {
-        return false; // If there's at least one key, the FormData is not empty
-      }
-      return true; // If no keys, the FormData is empty
-    };
-
-    if (isFormDataEmpty()) {
-      console.log('FormData is empty.');
-    } else {
-      console.log('FormData contains data.');
-    }
-
-
     try {
-      //const response = await axios.post('/api/upload', formData, {
       const response = await axios.post('/api/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-      console.log('File uploaded successfully', response.data);
+      setMessage(response.data.message);
+      setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       if (error.response) {
         // The request was made and the server responded with a status code that does not fall in the range of 2xx 
@@ -68,10 +76,10 @@ export default function Upload() {
       } else {
         // Something happened in setting up the request that triggered an Error 
         console.error('Error message:', error.message);
+        console.error('Error config:', error.config);
         setMessage('Request setup failed.');
       }
-      console.error('Error config:', error.config);
-     // setMessage('Upload failed.');
+      setTimeout(() => setMessage(''), 3000);
     }
   };
 
@@ -82,11 +90,16 @@ export default function Upload() {
       <form onSubmit={handleSubmit}>
         <div>
           <label>Text:</label>
-          <input type="text" value={text} onChange={handleTextChange} />
+          <input type="text" value={text} onChange={handleTextChange} ref={textInputRef} />
         </div>
         <div>
           <label>File:</label>
-          <input type="file" onChange={handleFileChange} />
+          <input type="file" onChange={handleFileChange} ref={fileInputRef} />
+          {file && (
+            <div> 
+              <button type="button" onClick={handleFileRemove}>Unselect File</button> 
+              </div>
+            )}
         </div>
         <button type="submit">Submit</button>
       </form>
