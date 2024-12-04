@@ -2,8 +2,8 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from backend.models.api_data_model import RequestType
-from backend.services.check_data_compliance_service import check_compliance
+from models.api_data_model import RequestType
+from services.check_data_compliance_service import check_compliance
 
 router = APIRouter()
 
@@ -15,7 +15,7 @@ async def compliance_check(request: RequestType):
         # Delegate to the service layer
         response = check_compliance(request.data, request.dataType, request.dataURL)
         return {
-            "message": "Compliance check successful",
+            "message": "API run successful",
             "data": response
         }
     except HTTPException as e:

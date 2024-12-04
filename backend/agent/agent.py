@@ -3,35 +3,21 @@ import sqlite3
 from urllib import request
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain  
-from backend.services.gemini_service import GeminiService
-from backend.core.config import ConfigRules
+from services.gemini_service import GeminiService
+from core.config import ConfigRules
+from state.datastate import DataState
 
-class Agent:
-    def __init__(self, service, db_name: str):   
-        self.service = service
-        self.db_name = db_name
-        self.conn = None
-        self.connect_db()  
 
-    def connect_db(self):
-        """Method to connect to SQLite database."""
-        try:
-            self.conn = sqlite3.connect(self.db_name)  
-        except sqlite3.Error as e:
-            print(f"Error connecting to database: {e}")
-            self.conn = None
 
-    def retrieve_rules(self):    
-        if self.conn:
-            config_rules = ConfigRules(self.db_name)
-            config_rules.create_table()
-            rules = config_rules.get_all_rules()
-            return rules
-        else:
-            print("Database connection is not established.")
-            return []
 
-    def _create_prompt(self, template: str, data: str, rules: str):
+def retrieve_rules():    
+    config_rules = ConfigRules()
+    rules = config_rules.get_all_rules()
+    return rules
+        
+            
+
+def create_prompt( template: str, data: str, rules: str):
         try:
             prompt = template.format(request=data, rules=rules) 
             return prompt
@@ -42,25 +28,28 @@ class Agent:
             print(f"Error creating prompt: {e}")
             return ""
 
-    def invoke_service(self, data: str):
+def invoke_gdpr_agent( state: DataState):
+        print("Invoking GDPR agent for input text:", state["input_text"])
+
         """Create a prompt from the template, invoke the Gemini service, and return the response."""
-        all_rules = self.retrieve_rules()
+
+        all_rules = retrieve_rules()
+        
         template = f"""
         You are checking if the user input contains personal data that should be protected under the GDPR.
-        A set of rules is provided to you to do the check.
-        Only use the rules provided to you.
+        A set of rules is provided and use if required to check the input.
         Your output should indicate if the input is compliant or non-compliant, and provide a reason for non-compliance.
         
         Here is the user input:
-        {data}
+        {state["input_text"]}
         ---
         Here are the rules:
         {json.dumps(all_rules, indent=2)}  # JSON formatted rules for clarity
         """
-        prompt_text = self._create_prompt(template, data, json.dumps(all_rules, indent=2))
-        
+        prompt_text = create_prompt(template, state["input_text"], json.dumps(all_rules, indent=2))
+        print("Prompt text:", prompt_text)
         if prompt_text:
-            response_json = self.service.invoke_service(prompt_text)
+            response_json = GeminiService.invoke_service(state["input_text"])
             if isinstance(response_json, dict):
                 response_text = response_json.get('data', '')
             else:
@@ -68,6 +57,16 @@ class Agent:
             if not response_text:
                 print("No response text received.")
                 return {"error": "Empty response text from service"}
-            return response_text
+            print("Response text:", response_text)
+            try:
+                response_data = json.loads(response_text)
+                response_values = list(response_data.values())
+                print("Response values:", response_values)
+                state["results"] = response_values
+            except json.JSONDecodeError as e:
+                print(f"Error decoding JSON response: {e}")
+                return {"error": "Invalid JSON response from service"}
+            
+            return state
         else:
             return {"error": "Error in creating prompt"}

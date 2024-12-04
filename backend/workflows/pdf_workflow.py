@@ -1,7 +1,7 @@
 import requests
 from io import BytesIO
 from PyPDF2 import PdfReader
-from backend.utils.exceptions import WorkflowError
+from utils.exceptions import WorkflowError
 
 
 def check_pdf_compliance(data_url: str):

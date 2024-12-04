@@ -1,16 +1,13 @@
 from pathlib import Path
 import os
 import sqlite3
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 
-app = FastAPI()
 cwd = os.getcwd()
 parent_dir = os.path.dirname(cwd)
 db_path = Path(parent_dir+"/backend/core/gdbr_Validator.db")
 
 class ConfigRules:
-    def __init__(self, db_path):
+    def __init__(self):
         self.db_paths = db_path
         
     def create_config():
@@ -99,3 +96,4 @@ class ConfigRules:
         connection.commit()
 
 
+        

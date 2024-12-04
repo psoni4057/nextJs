@@ -1,10 +1,12 @@
 
 from fastapi import FastAPI
-from backend.agent.agent import Agent
-from backend.api.endpoints import compliance
-from backend.services.gemini_service import GeminiService
 
+from api.endpoints import compliance
+from services.gemini_service import GeminiService
+import uvicorn
+from core.config import ConfigRules
 
+## Do all the initializations and start the server 
 
 app = FastAPI()
 
@@ -15,18 +17,13 @@ app.include_router(compliance.router, prefix="/api/v1")
 async def root():
     return {"message": "Welcome to the GDPR Validator API"}
 
-#import os
-# from pathlib import Path
-# from agent.agent import Agent
-# from services.gemini_service import GeminiService
-# from core.config import ConfigRules
+def init_config_rules():
+            config_rules = ConfigRules()
+            config_rules.create_table()
+            return 
 
-# cwd = os.getcwd()
-# parent_dir = os.path.dirname(cwd)
-# db_path = Path(parent_dir+"/backend/core/gdbr_Validator.db")
-# gemini_service = GeminiService()
-# agent = Agent(service=gemini_service, db_name=db_path)
-# data = "Password is bhd"  
-# result = agent.invoke_service(data)
-# print("Result:",result)
+if __name__ == "__main__":
+    init_config_rules()
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
 
