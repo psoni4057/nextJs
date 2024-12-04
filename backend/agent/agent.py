@@ -34,22 +34,16 @@ def invoke_gdpr_agent( state: DataState):
         """Create a prompt from the template, invoke the Gemini service, and return the response."""
 
         all_rules = retrieve_rules()
-        
-        template = f"""
-        You are checking if the user input contains personal data that should be protected under the GDPR.
-        A set of rules is provided and use if required to check the input.
-        Your output should indicate if the input is compliant or non-compliant, and provide a reason for non-compliance.
-        
-        Here is the user input:
-        {state["input_text"]}
-        ---
-        Here are the rules:
-        {json.dumps(all_rules, indent=2)}  # JSON formatted rules for clarity
-        """
-        prompt_text = create_prompt(template, state["input_text"], json.dumps(all_rules, indent=2))
+        sample_rules = [
+            {"id": 1, "rule": "Ignore Phone numbers starting with 7."},
+            {"id": 2, "rule": "Ignore Names starting with An."}
+        ]
+        all_rules = json.dumps(sample_rules)
+       
+        prompt_text = True
         print("Prompt text:", prompt_text)
         if prompt_text:
-            response_json = GeminiService.invoke_service(state["input_text"])
+            response_json = GeminiService.invoke_service(state["input_text"],all_rules)
             if isinstance(response_json, dict):
                 response_text = response_json.get('data', '')
             else:

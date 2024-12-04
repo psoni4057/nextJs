@@ -19,22 +19,25 @@ parser = PydanticOutputParser(pydantic_object=ValidationResponse)
 class GeminiService:
 
     @staticmethod
-    def invoke_llm_chain(prompt_text: str):
+    def invoke_llm_chain(prompt_text,rules: str):
         prompt_template = PromptTemplate(
             template=(
             "You are a GDPR expert. Tell if the given data is compliant as Yes or No "
             "and the reason in a very short sentence. Here is the data: {data}."
+            "Use the given rules to override the decision if required."
+            "The rules are as follows: {rules}"
             ),
-            input_variables=["data"]
+            input_variables=["data","rules"],
         )
+        print("Invoking LLM with Prompt template:", prompt_template)
         chain = LLMChain(prompt=prompt_template, llm=llm_openai)
-        response = chain.invoke({"data": prompt_text})
+        response = chain.invoke({"data": prompt_text, "rules": rules})
         print("Response from LLM:", response)
         return response
     
-    def invoke_service( prompt_text: str):
+    def invoke_service( prompt_text,rules: str):
         
-        response = GeminiService.invoke_llm_chain(prompt_text)
+        response = GeminiService.invoke_llm_chain(prompt_text,rules)
         
         if not response or 'text' not in response:
             print("Error: No valid response received.")
