@@ -7,7 +7,7 @@ from langchain_core.prompts import BasePromptTemplate
 from langchain_core.prompts import PromptTemplate
 
 MODEL_NAME = "gemini-pro"
-GOOGLE_API_KEY = "USE_YOUR_GOOGLE_API_KEY"
+GOOGLE_API_KEY = "AIzaSyANC7rcZSIIgaqSA4IihXeWZ8C3n5T75G8"
 
 
 llm = ChatGoogleGenerativeAI(model=MODEL_NAME,

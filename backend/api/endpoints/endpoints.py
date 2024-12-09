@@ -1,33 +1,34 @@
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException,APIRouter
 from pydantic import BaseModel
-from backend.core.config import ConfigRules
+from core.config import ConfigRules
 
-app = FastAPI()
+router = APIRouter()
 configrules = ConfigRules.create_config()
 
 class Rule(BaseModel):
     rules: str
     example: str
 
-@app.post("/configrules/")
+@router.post("/configrules")
 async def create_rule(rule: Rule):
     configrules.insert_rule(rule.rules, rule.example)
     return {"message": "Rule created successfully"}
 
-@app.get("/configrules/")
+# Get all rules
+@router.get("/configrules")
 async def get_all_rules():
     rules = configrules.get_all_rules()
     return {"rules": [{"id": rule[0], "rules": rule[1], "example": rule[2]} for rule in rules]}
 
-@app.get("/configrules/{rule_name}")
+@router.get("/configrules/{rule_name}")
 async def get_rule(rule_name: str):
     rows = configrules.get_rule_by_name(rule_name)
     if not rows:
         raise HTTPException(status_code=404, detail=f"No rule found with name {rule_name}")
     return {"rules": [{"id": row[0], "rules": row[1], "example": row[2]} for row in rows]}
 
-@app.delete("/configrules/{rule_name}")
+@router.delete("/configrules/{rule_name}")
 async def delete_rule(rule_name: str):
     rows = configrules.get_rule_by_name(rule_name)
     if not rows:
@@ -35,7 +36,7 @@ async def delete_rule(rule_name: str):
     configrules.delete_rule(rule_name)
     return {"message": f"Rule {rule_name} deleted successfully"}
 
-@app.get("/configrules/id/{rule_id}")
+@router.get("/configrules/id/{rule_id}")
 async def get_rule_by_id(rule_id: int):
     row = configrules.get_rule_by_name(rule_id)
     if row:
@@ -43,7 +44,7 @@ async def get_rule_by_id(rule_id: int):
     else:
         raise HTTPException(status_code=404, detail=f"No rule found with ID {rule_id}")
 
-@app.put("/configrules/{rule_name}")
+@router.put("/configrules/{rule_name}")
 async def update_rule(rule_name: str, rule_update: Rule):
     updated = configrules.update_rule(rule_update.rules, rule_update.example)
     if updated:

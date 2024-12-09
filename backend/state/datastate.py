@@ -3,6 +3,10 @@ import operator
 class DataState(TypedDict):
     messages: Annotated[Sequence[str], operator.add]
     input_text: str
+    appName: str
+    model: str
+    status: str
+    comments: str
     rules: Annotated[Sequence[str], operator.add]
     filecontent: Annotated[List[str], operator.add]
     services: Annotated[List[str], operator.add]

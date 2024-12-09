@@ -5,6 +5,7 @@ from pydantic import BaseModel
 class RequestType(BaseModel):
     data: str
     appName: str
+    model: str
     dataURL: str
     dataType: str
 

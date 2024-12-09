@@ -2,6 +2,8 @@ from pathlib import Path
 import os
 import sqlite3
 
+from fastapi import HTTPException
+
 cwd = os.getcwd()
 parent_dir = os.path.dirname(cwd)
 db_path = Path(parent_dir+"/backend/core/gdbr_Validator.db")
@@ -11,7 +13,7 @@ class ConfigRules:
         self.db_paths = db_path
         
     def create_config():
-        return ConfigRules(db_path)   
+        return ConfigRules()   
 
     def _connect(self):
         return sqlite3.connect(db_path)

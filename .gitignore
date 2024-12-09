@@ -1,5 +1,9 @@
 # Ignore virtual environments
 gdpr-validator/
+backend/Lib
+backend/Scripts
+backend/Include
+backend/pyvenv.cfg
 
 # Ignore Python cache files
 __pycache__/

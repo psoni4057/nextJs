@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import json
 from langchain.chains import LLMChain  
 from langchain.prompts import PromptTemplate
-from models.gemini import llm, llm_openai
+from models.gemini import llm
 
 from langchain.output_parsers import PydanticOutputParser
 
@@ -12,9 +12,6 @@ class ValidationResponse(BaseModel):
     reason: str
    
 parser = PydanticOutputParser(pydantic_object=ValidationResponse)
-
-
-
 
 class GeminiService:
 
@@ -30,7 +27,7 @@ class GeminiService:
             input_variables=["data","rules"],
         )
         print("Invoking LLM with Prompt template:", prompt_template)
-        chain = LLMChain(prompt=prompt_template, llm=llm_openai)
+        chain = LLMChain(prompt=prompt_template, llm=llm)
         response = chain.invoke({"data": prompt_text, "rules": rules})
         print("Response from LLM:", response)
         return response

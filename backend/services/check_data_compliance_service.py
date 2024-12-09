@@ -4,9 +4,9 @@ from workflows.pdf_workflow import check_pdf_compliance
 from utils.exceptions import WorkflowError
 from workflows.workflows import initialize_text_workflow
 
-def process_text(data: str):
+def process_text(data: str, appName: str, model: str): 
     text_workflow = initialize_text_workflow()
-    user_input = { "input_text":data }
+    user_input = { "input_text":data, "appName":appName, "model":model}   
     for event in text_workflow.stream(user_input):
         data = event.values()
         print("The data from the stream " ,data)
@@ -18,11 +18,11 @@ def process_text(data: str):
     results = results_list
     return results
 
-def check_compliance(data: str, data_type: str, data_url: str):
+def check_compliance(data: str, data_type: str, data_url: str, appName: str, Model: str):
     try:
         if data_type == "text":
             print("for text workflow")    # Remove it after adding text workflow
-            return process_text(data)
+            return process_text(data, appName, Model) 
             # return check_text_compliance(data)
         elif data_type == "pdf":
             return check_pdf_compliance(data_url)
